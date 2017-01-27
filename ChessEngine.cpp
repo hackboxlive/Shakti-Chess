@@ -9,10 +9,80 @@ char Board[][8]={
 	{' ',' ',' ',' ',' ',' ',' ',' '},
 	{'P','P','P','P','P','P','P','P'},
 	{'R','K','B','Q','A','B','K','R'},
-};
-												//Initial Board Configuration
+};								//Initial Board Configuration
 int kingPositionCapital,kingPositionSmall;
 int globaldepth;
+int pawnBoard[][8]={
+        { 0,  0,  0,  0,  0,  0,  0,  0},
+        {50, 50, 50, 50, 50, 50, 50, 50},
+        {10, 10, 20, 30, 30, 20, 10, 10},
+        { 5,  5, 10, 25, 25, 10,  5,  5},
+        { 0,  0,  0, 20, 20,  0,  0,  0},
+        { 5, -5,-10,  0,  0,-10, -5,  5},
+        { 5, 10, 10,-20,-20, 10, 10,  5},
+        { 0,  0,  0,  0,  0,  0,  0,  0}
+	};
+int rookBoard[][8]={
+        { 0,  0,  0,  0,  0,  0,  0,  0},
+        { 5, 10, 10, 10, 10, 10, 10,  5},
+        {-5,  0,  0,  0,  0,  0,  0, -5},
+        {-5,  0,  0,  0,  0,  0,  0, -5},
+        {-5,  0,  0,  0,  0,  0,  0, -5},
+        {-5,  0,  0,  0,  0,  0,  0, -5},
+        {-5,  0,  0,  0,  0,  0,  0, -5},
+        { 0,  0,  0,  5,  5,  0,  0,  0}
+	};
+int knightBoard[][8]={
+        {-50,-40,-30,-30,-30,-30,-40,-50},
+        {-40,-20,  0,  0,  0,  0,-20,-40},
+        {-30,  0, 10, 15, 15, 10,  0,-30},
+        {-30,  5, 15, 20, 20, 15,  5,-30},
+        {-30,  0, 15, 20, 20, 15,  0,-30},
+        {-30,  5, 10, 15, 15, 10,  5,-30},
+        {-40,-20,  0,  5,  5,  0,-20,-40},
+        {-50,-40,-30,-30,-30,-30,-40,-50}
+	};
+int bishopBoard[][8]={
+        {-20,-10,-10,-10,-10,-10,-10,-20},
+        {-10,  0,  0,  0,  0,  0,  0,-10},
+        {-10,  0,  5, 10, 10,  5,  0,-10},
+        {-10,  5,  5, 10, 10,  5,  5,-10},
+        {-10,  0, 10, 10, 10, 10,  0,-10},
+        {-10, 10, 10, 10, 10, 10, 10,-10},
+        {-10,  5,  0,  0,  0,  0,  5,-10},
+        {-20,-10,-10,-10,-10,-10,-10,-20}
+    };
+int queenBoard[][8]={
+        {-20,-10,-10, -5, -5,-10,-10,-20},
+        {-10,  0,  0,  0,  0,  0,  0,-10},
+        {-10,  0,  5,  5,  5,  5,  0,-10},
+        { -5,  0,  5,  5,  5,  5,  0, -5},
+        {  0,  0,  5,  5,  5,  5,  0, -5},
+        {-10,  5,  5,  5,  5,  5,  0,-10},
+        {-10,  0,  5,  0,  0,  0,  0,-10},
+        {-20,-10,-10, -5, -5,-10,-10,-20}
+    };
+int kingMidBoard[][8]={
+        {-30,-40,-40,-50,-50,-40,-40,-30},
+        {-30,-40,-40,-50,-50,-40,-40,-30},
+        {-30,-40,-40,-50,-50,-40,-40,-30},
+        {-30,-40,-40,-50,-50,-40,-40,-30},
+        {-20,-30,-30,-40,-40,-30,-30,-20},
+        {-10,-20,-20,-20,-20,-20,-20,-10},
+        { 20, 20,  0,  0,  0,  0, 20, 20},
+        { 20, 30, 10,  0,  0, 10, 30, 20}
+    };
+int kingEndBoard[][8]={
+        {-50,-40,-30,-20,-20,-30,-40,-50},
+        {-30,-20,-10,  0,  0,-10,-20,-30},
+        {-30,-10, 20, 30, 30, 20,-10,-30},
+        {-30,-10, 30, 40, 40, 30,-10,-30},
+        {-30,-10, 30, 40, 40, 30,-10,-30},
+        {-30,-10, 20, 30, 30, 20,-10,-30},
+        {-30,-30,  0,  0,  0,  0,-30,-30},
+        {-50,-30,-30,-30,-30,-30,-30,-50}
+};
+int score[1001000];
 bool kingSafe()	{
 	int temp=1;
 	int r=kingPositionCapital/8;
@@ -383,7 +453,6 @@ string possibleMove()	{
 				break;
 		}
 	}
-//	cout<<listitem;
 	return listitem;
 }
 void makeMove(string listitem)	{
@@ -436,30 +505,191 @@ void flipBoard()	{
 	kingPositionSmall=63-temp;
 	return;
 }
-int rating()	{
-	return 0;
+int rateAttack()	{
+	int counter=0;
+	int temppos=kingPositionCapital;
+	for(int i=0;i<64;i++)	{
+		if(Board[i/8][i%8]=='P')	{
+			kingPositionCapital=i;
+			if(!kingSafe())	{
+				counter-=64;
+			}
+		}
+		if(Board[i/8][i%8]=='R')	{
+			kingPositionCapital=i;
+			if(!kingSafe())	{
+				counter-=500;
+			}
+		}
+		if(Board[i/8][i%8]=='K')	{
+			kingPositionCapital=i;
+			if(!kingSafe())	{
+				counter-=300;
+			}
+		}
+		if(Board[i/8][i%8]=='B')	{
+			kingPositionCapital=i;
+			if(!kingSafe())	{
+				counter-=300;
+			}
+		}
+		if(Board[i/8][i%8]=='Q')	{
+			kingPositionCapital=i;
+			if(!kingSafe())	{
+				counter-=900;
+			}
+		}
+	}
+	kingPositionCapital=temppos;
+	if(!kingSafe())	{
+		counter-=200;
+	}
+	return counter/2;
+}
+int rateMaterial()	{
+	int counter=0;
+	int BishopCounter=0;
+	for(int i=0;i<64;i++)	{
+		if(Board[i/8][i%8]=='P')	{
+			counter+=100;
+		}
+		if(Board[i/8][i%8]=='R')	{
+			counter+=500;
+		}
+		if(Board[i/8][i%8]=='K')	{
+			counter+=300;
+		}
+		if(Board[i/8][i%8]=='B')	{
+			BishopCounter++;
+		}
+		if(Board[i/8][i%8]=='Q')	{
+			counter+=900;
+		}
+	}
+	if(BishopCounter>=2)	{
+		counter+=300*BishopCounter;
+	}
+	else	{
+		if(BishopCounter==1)	{
+			counter+=250;
+		}
+	}
+	return counter;
+}
+int rateMovability(int listlength,int depth,int material)	{
+	int counter=listlength;
+	if(listlength==0)	{
+		if(!kingSafe())	{
+			counter+=depth*(-200000);
+		}
+		else	{
+			counter+=depth*(-150000);
+		}
+	}
+	return counter;
+}
+int ratePositional(int material)	{
+	int counter=0;
+	for(int i=0;i<64;i++)	{
+		if(Board[i/8][i%8]=='P')	{
+			counter+=pawnBoard[i/8][i%8];
+		}
+		if(Board[i/8][i%8]=='R')	{
+			counter+=rookBoard[i/8][i%8];
+		}
+		if(Board[i/8][i%8]=='K')	{
+			counter+=knightBoard[i/8][i%8];
+		}
+		if(Board[i/8][i%8]=='B')	{
+			counter+=bishopBoard[i/8][i%8];
+		}
+		if(Board[i/8][i%8]=='Q')	{
+			counter+=queenBoard[i/8][i%8];
+		}
+		if(Board[i/8][i%8]=='A')	{
+			if(material>=1750)	{
+				counter+=kingMidBoard[i/8][i%8];
+				counter+=possibleKing(kingPositionCapital).length()*10;
+			}
+			else	{
+				counter+=kingEndBoard[i/8][i%8];
+				counter+=possibleKing(kingPositionCapital).length()*30;
+			}
+		}
+	}
+	return counter;
+}
+int rating(int listlength,int depth)	{
+	int counter=0;
+	int material=rateMaterial();
+	counter+=rateAttack();
+	counter+=material;
+	counter+=rateMovability(listlength,depth,material);
+	counter+=ratePositional(material);
+	flipBoard();
+	material=rateMaterial();
+	counter-=rateAttack();
+	counter-=material;
+	counter-=rateMovability(listlength,depth,material);
+	counter-=ratePositional(material);
+	flipBoard();
+	return -(counter+50*depth);
+}
+string sortMoves(string listitem)	{
+	for(int i=0;i<listitem.length();i+=5)	{
+		makeMove(listitem.substr(i,5));
+		score[i/5]=(-1)*rating(-1,0);
+		unmakeMove(listitem.substr(i,5));
+	}
+	string newListA="",newListB=listitem;
+	int iter;
+	if(6<listitem.length()/5)	{
+		iter=6;
+	}
+	else	{
+		iter=listitem.length()/5;
+	}
+	for(int i=0;i<iter;i++)	{
+		int maxx=-1000000,maxl=0;
+		for(int j=0;j<listitem.length()/5;j++)	{
+			if(score[j]>maxx)	{
+				maxx=score[j];
+				maxl=j;
+			}
+		}
+		score[maxl]=-1000000;
+		string strs=listitem.substr(maxl*5,5);
+		newListA+=strs;
+		int xpos;
+		for(int j=0;j<newListB.length();j+=5)	{
+			if(newListB.substr(j,5).compare(strs)==0)	{
+				xpos=j;
+			}
+		}
+		newListB.erase(xpos,5);
+	}
+	return newListA+newListB;
 }
 string alphabeta(int depth,int beta,int alpha,string move,int player)	{
-//	cout<<"level="<<depth<<endl;
 	string listitem=possibleMove();
 	if(depth==0 || listitem.length()==0)	{
-		return move+to_string((rating()*(player*2-1)));
+		return move+to_string((rating(listitem.length(),depth)*(player*2-1)));
 	}
-//	listitem="";
-//	cout<<"Number of moves:";
-//	int temp;
-//	cin>>temp;
-//	for(int i=0;i<temp;i++)	{
-//		listitem+="1111b";
-//	}
+	listitem=sortMoves(listitem);
 	player=1-player;
 	for(int i=0;i<listitem.length();i+=5)	{
 		makeMove(listitem.substr(i,5));
 		flipBoard();
 		string returnstring=alphabeta(depth-1,beta,alpha,listitem.substr(i,5),player);
 		int value=0;
+		int fff=0;
 		for(int j=5;j<returnstring.length();j++)	{
-			value=value*10+(returnstring[j]-'0');
+			if(returnstring[j]>='0' && returnstring[j]<='9')	{
+				value=value*10+(returnstring[j]-'0');
+			}
+		}
+		if(returnstring[5]=='-')	{
+			value=value*-1;
 		}
 		flipBoard();
 		unmakeMove(listitem.substr(i,5));
@@ -504,18 +734,24 @@ int main()	{
 			kingPositionSmall=i;
 		}
 	}
-//	makeMove("7657 ");
-//	unmakeMove("7657 ");
-	globaldepth=4;
-	cout<<possibleMove();
-	makeMove(alphabeta(globaldepth,1000000,-1000000,"",0));
-//	possibleMove();
-	cout<<endl;
-	for(int i=0;i<8;i++)	{
-		for(int j=0;j<8;j++)	{
-			cout<<Board[i][j];
+	string str;
+	while(1)	{
+		globaldepth=4;
+		cout<<possibleMove()<<endl;
+		cin>>str;
+		if(str.length()==4)	{
+			str=str+" ";
 		}
-		cout<<endl;
+		makeMove(str);
+		string strs=alphabeta(globaldepth,1000000,-1000000,"",0);
+		cout<<strs<<endl;
+		makeMove(strs);
+		for(int i=0;i<8;i++)	{
+			for(int j=0;j<8;j++)	{
+				cout<<Board[i][j];
+			}
+			cout<<endl;
+		}
 	}
 	return 0;
 }
